@@ -44,6 +44,8 @@ export interface Attendance {
   check_in: string | null;
   check_out: string | null;
   status: 'normal' | 'late' | 'early_leave' | 'absent' | 'late_and_early';
+  is_leave: number;
+  leave_reason: string;
   created_at: string;
 }
 
@@ -53,6 +55,23 @@ export interface AttendanceWithDetail extends Attendance {
   shift: string;
   route_name: string;
   route_no: string;
+}
+
+export interface LeaveRequest {
+  id: number;
+  driver_id: number;
+  date: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  approved_by: number | null;
+  approved_at: string | null;
+  reject_reason: string;
+}
+
+export interface LeaveRequestWithDetail extends LeaveRequest {
+  driver_name: string;
+  approver_name: string | null;
 }
 
 export interface AuthPayload {

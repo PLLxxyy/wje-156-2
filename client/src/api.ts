@@ -125,3 +125,32 @@ export function exportAttendanceCSV(year: number, month: number) {
   const prefix = `${year}-${String(month).padStart(2, '0')}`;
   return downloadCSV(`/stats/export/attendance?year=${year}&month=${month}`, `attendance-${prefix}.csv`);
 }
+
+// Leaves
+export function getLeaveList(year?: number, month?: number, status?: string) {
+  const params: string[] = [];
+  if (year && month) params.push(`year=${year}&month=${month}`);
+  if (status) params.push(`status=${status}`);
+  const query = params.length > 0 ? `?${params.join('&')}` : '';
+  return request<any[]>(`/leaves${query}`);
+}
+
+export function submitLeave(date: string, reason: string) {
+  return request<any>('/leaves', {
+    method: 'POST',
+    body: JSON.stringify({ date, reason }),
+  });
+}
+
+export function approveLeave(id: number) {
+  return request<any>(`/leaves/${id}/approve`, {
+    method: 'PUT',
+  });
+}
+
+export function rejectLeave(id: number, rejectReason: string) {
+  return request<any>(`/leaves/${id}/reject`, {
+    method: 'PUT',
+    body: JSON.stringify({ reject_reason: rejectReason }),
+  });
+}

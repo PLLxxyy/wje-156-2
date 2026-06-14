@@ -131,13 +131,21 @@ export default function AttendancePage({ showToast }: Props) {
 
       <div className="card">
         <div className="card-title">考勤状态</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span className={`tag ${statusClass}`}>{STATUS_LABELS[record.status]}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span className={`tag ${statusClass}`}>{STATUS_LABELS[record.status]}</span>
+            {record.is_leave && <span className="tag tag-absent">请假</span>}
+          </div>
+          {record.is_leave && record.leave_reason && (
+            <div style={{ color: '#721c24', fontSize: 13, backgroundColor: '#f8d7da', padding: '8px 12px', borderRadius: 4 }}>
+              请假原因：{record.leave_reason}
+            </div>
+          )}
           {record.status === 'late' && <span style={{ color: '#856404', fontSize: 13 }}>签到时间晚于班次开始时间</span>}
           {record.status === 'early_leave' && <span style={{ color: '#856404', fontSize: 13 }}>签退时间早于班次结束时间</span>}
           {record.status === 'late_and_early' && <span style={{ color: '#721c24', fontSize: 13 }}>迟到且早退</span>}
-          {record.status === 'absent' && <span style={{ color: '#721c24', fontSize: 13 }}>未签到，标记为缺勤</span>}
-          {record.status === 'normal' && <span style={{ color: '#155724', fontSize: 13 }}>考勤正常</span>}
+          {record.status === 'absent' && !record.is_leave && <span style={{ color: '#721c24', fontSize: 13 }}>未签到，标记为缺勤</span>}
+          {record.status === 'normal' && !record.is_leave && <span style={{ color: '#155724', fontSize: 13 }}>考勤正常</span>}
         </div>
       </div>
     </div>

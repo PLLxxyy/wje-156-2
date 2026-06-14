@@ -51,9 +51,26 @@ export function initDatabase(): void {
       check_in TEXT,
       check_out TEXT,
       status TEXT DEFAULT 'absent' CHECK(status IN ('normal', 'late', 'early_leave', 'absent', 'late_and_early')),
+      is_leave INTEGER DEFAULT 0,
+      leave_reason TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now', 'localtime')),
       FOREIGN KEY (schedule_id) REFERENCES schedules(id),
       FOREIGN KEY (driver_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS leave_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      driver_id INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      reason TEXT NOT NULL DEFAULT '',
+      status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+      created_at TEXT DEFAULT (datetime('now', 'localtime')),
+      approved_by INTEGER,
+      approved_at TEXT,
+      reject_reason TEXT DEFAULT '',
+      FOREIGN KEY (driver_id) REFERENCES users(id),
+      FOREIGN KEY (approved_by) REFERENCES users(id),
+      UNIQUE(driver_id, date)
     );
   `);
 
@@ -84,6 +101,16 @@ export function initDatabase(): void {
     insertRoute.run('3路', 'L003', '汽车站', '工业园', '京A·34567');
     insertRoute.run('5路', 'L005', '市中心', '高铁站', '京A·45678');
     insertRoute.run('8路', 'L008', '体育馆', '医院', '京A·56789');
+  }
+
+  // Migrations - add columns if not exist
+  const cols = db.prepare("PRAGMA table_info(attendance)").all() as { name: string }[];
+  const colNames = cols.map(c => c.name);
+  if (!colNames.includes('is_leave')) {
+    db.prepare('ALTER TABLE attendance ADD COLUMN is_leave INTEGER DEFAULT 0').run();
+  }
+  if (!colNames.includes('leave_reason')) {
+    db.prepare('ALTER TABLE attendance ADD COLUMN leave_reason TEXT DEFAULT ""').run();
   }
 }
 

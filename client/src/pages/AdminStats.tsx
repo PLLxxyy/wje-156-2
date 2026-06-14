@@ -284,7 +284,7 @@ export default function AdminStats({ showToast }: Props) {
               <div className="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>日期</th><th>司机</th><th>线路</th><th>班次</th><th>签到</th><th>签退</th><th>状态</th></tr>
+                    <tr><th>日期</th><th>司机</th><th>线路</th><th>班次</th><th>签到</th><th>签退</th><th>考勤状态</th><th>请假</th></tr>
                   </thead>
                   <tbody>
                     {attendanceList.map((a: any) => (
@@ -296,9 +296,10 @@ export default function AdminStats({ showToast }: Props) {
                         <td>{a.check_in || '-'}</td>
                         <td>{a.check_out || '-'}</td>
                         <td><span className={`tag ${statusClass(a.status)}`}>{STATUS_LABELS[a.status]}</span></td>
+                        <td>{a.is_leave ? <span className="tag tag-absent">请假</span> : '-'}</td>
                       </tr>
                     ))}
-                    {attendanceList.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: '#aaa' }}>暂无数据</td></tr>}
+                    {attendanceList.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#aaa' }}>暂无数据</td></tr>}
                   </tbody>
                 </table>
               </div>

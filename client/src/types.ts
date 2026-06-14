@@ -39,12 +39,28 @@ export interface AttendanceRecord {
   check_in: string | null;
   check_out: string | null;
   status: 'normal' | 'late' | 'early_leave' | 'absent' | 'late_and_early';
+  is_leave?: number;
+  leave_reason?: string;
   driver_name?: string;
   date?: string;
   shift?: string;
   route_name?: string;
   route_no?: string;
   plate_no?: string;
+}
+
+export interface LeaveRecord {
+  id: number;
+  driver_id: number;
+  date: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  approved_by: number | null;
+  approved_at: string | null;
+  reject_reason: string;
+  driver_name?: string;
+  approver_name?: string | null;
 }
 
 export interface OverviewStats {
@@ -102,4 +118,10 @@ export const STATUS_LABELS: Record<string, string> = {
   early_leave: '早退',
   absent: '缺勤',
   late_and_early: '迟到+早退',
+};
+
+export const LEAVE_STATUS_LABELS: Record<string, string> = {
+  pending: '待审批',
+  approved: '已批准',
+  rejected: '已拒绝',
 };

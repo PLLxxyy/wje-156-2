@@ -1,0 +1,15 @@
+{
+  "name": "bus-driver-scheduling",
+  "version": "1.0.0",
+  "private": true,
+  "description": "公交司机排班管理系统",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently -n server,client -c blue,green \"cd server && PORT=3202 npm run dev\" \"cd client && VITE_PORT=5174 VITE_API_PORT=3202 npm run dev\"",
+    "build": "cd client && npm run build",
+    "start": "cd server && PORT=3202 npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

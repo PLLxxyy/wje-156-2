@@ -123,8 +123,8 @@ router.put('/:id/approve', authMiddleware, adminOnly, (req: Request, res: Respon
 
   if (schedule) {
     db.prepare(
-      'UPDATE attendance SET is_leave = 1, leave_reason = ? WHERE schedule_id = ?'
-    ).run(leave.reason, schedule.id);
+      'UPDATE attendance SET is_leave = 1, leave_reason = ?, status = ? WHERE schedule_id = ?'
+    ).run(leave.reason, 'absent', schedule.id);
   }
 
   res.json({ message: '请假已批准' });
@@ -160,9 +160,38 @@ router.put('/:id/reject', authMiddleware, adminOnly, (req: Request, res: Respons
   ).run('rejected', user.userId, now, reject_reason || '', id);
 
   if (schedule) {
+    const attendance = db.prepare(
+      'SELECT check_in, check_out FROM attendance WHERE schedule_id = ?'
+    ).get(schedule.id) as { check_in: string | null; check_out: string | null } | undefined;
+
+    let newStatus = 'absent';
+    if (attendance) {
+      if (attendance.check_in && attendance.check_out) {
+        const shift = db.prepare('SELECT shift FROM schedules WHERE id = ?').get(schedule.id) as { shift: string } | undefined;
+        if (shift) {
+          const SHIFT_TIMES: Record<string, { start: string; end: string }> = {
+            morning: { start: '06:00', end: '14:00' },
+            afternoon: { start: '14:00', end: '22:00' },
+            night: { start: '22:00', end: '06:00' },
+          };
+          const times = SHIFT_TIMES[shift.shift];
+          if (times) {
+            const isLate = attendance.check_in > times.start;
+            const isEarly = attendance.check_out < times.end;
+            if (isLate && isEarly) newStatus = 'late_and_early';
+            else if (isLate) newStatus = 'late';
+            else if (isEarly) newStatus = 'early_leave';
+            else newStatus = 'normal';
+          }
+        }
+      } else if (attendance.check_in) {
+        newStatus = 'absent';
+      }
+    }
+
     db.prepare(
-      'UPDATE attendance SET is_leave = 0, leave_reason = ? WHERE schedule_id = ?'
-    ).run('', schedule.id);
+      'UPDATE attendance SET is_leave = 0, leave_reason = ?, status = ? WHERE schedule_id = ?'
+    ).run('', newStatus, schedule.id);
   }
 
   res.json({ message: '请假已拒绝' });

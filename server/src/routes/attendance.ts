@@ -44,7 +44,7 @@ router.post('/checkin', authMiddleware, (req: Request, res: Response) => {
 
   const attendance = db.prepare(
     'SELECT * FROM attendance WHERE schedule_id = ?'
-  ).get(schedule.schedule_id) as { id: number; check_in: string | null } | undefined;
+  ).get(schedule.schedule_id) as { id: number; check_in: string | null; is_leave: number } | undefined;
 
   if (!attendance) {
     res.status(404).json({ error: '考勤记录不存在' });
@@ -53,6 +53,12 @@ router.post('/checkin', authMiddleware, (req: Request, res: Response) => {
 
   if (attendance.check_in) {
     res.status(400).json({ error: '今天已经签到过了' });
+    return;
+  }
+
+  if (attendance.is_leave) {
+    db.prepare('UPDATE attendance SET check_in = ? WHERE id = ?').run(now, attendance.id);
+    res.json({ message: '签到成功', check_in: now, status: 'absent' });
     return;
   }
 
@@ -79,7 +85,7 @@ router.post('/checkout', authMiddleware, (req: Request, res: Response) => {
 
   const attendance = db.prepare(
     'SELECT * FROM attendance WHERE schedule_id = ?'
-  ).get(schedule.schedule_id) as { id: number; check_in: string | null; check_out: string | null } | undefined;
+  ).get(schedule.schedule_id) as { id: number; check_in: string | null; check_out: string | null; is_leave: number } | undefined;
 
   if (!attendance) {
     res.status(404).json({ error: '考勤记录不存在' });
@@ -93,6 +99,12 @@ router.post('/checkout', authMiddleware, (req: Request, res: Response) => {
 
   if (attendance.check_out) {
     res.status(400).json({ error: '今天已经签退过了' });
+    return;
+  }
+
+  if (attendance.is_leave) {
+    db.prepare('UPDATE attendance SET check_out = ? WHERE id = ?').run(now, attendance.id);
+    res.json({ message: '签退成功', check_out: now, status: 'absent' });
     return;
   }
 
